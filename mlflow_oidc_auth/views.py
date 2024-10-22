@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import requests
@@ -95,6 +96,8 @@ from mlflow_oidc_auth.config import AppConfig
 from mlflow_oidc_auth.sqlalchemy_store import SqlAlchemyStore
 
 from mlflow.server import app
+
+import jwt
 
 # Create the OAuth2 client
 auth_client = WebApplicationClient(AppConfig.get_property("OIDC_CLIENT_ID"))
@@ -195,6 +198,49 @@ def authenticate_request_basic_auth() -> Union[Authorization, Response]:
     else:
         app.logger.debug("User %s not authenticated", username)
         return False
+    
+
+def _get_public_keys():
+    """
+    Returns:
+        List of RSA public keys usable by PyJWT.
+    """
+    r = requests.get(AppConfig.get_property("OIDC_PUBLIC_KEYS_URL"))
+    public_keys = []
+    jwk_set = r.json()
+    for key_dict in jwk_set["keys"]:
+        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key_dict))
+        public_keys.append(public_key)
+    return public_keys
+
+
+def validate_token(token, key, sign_alg):
+    try:
+        # decode returns the claims that has the email when needed
+        token = jwt.decode(token, key=key, audience=AppConfig.get_property("OIDC_AUDIENCE"), algorithms=[sign_alg])
+        _set_username(token[AppConfig.get_property("OIDC_USERNAME_TOKEN_ATTRIBUTE")])
+    except Exception as e:
+        print(token)
+        print(e)
+
+def authenticate_token():
+    """
+    Verify the token in the request.
+    """
+    token = request.authorization.token
+    sign_alg = AppConfig.get_property("OIDC_SIGNING_ALG")
+
+    if sign_alg == "HS256":
+        key = AppConfig.get_property("OIDC_HS256_SECRET")
+        validate_token(token, key, sign_alg)
+        return True
+
+    keys = _get_public_keys()
+    # Loop through the keys since we can't pass the key set to the decoder
+    for key in keys:
+        validate_token(token, key, sign_alg)
+    
+    return True
 
 
 def _get_username():
