@@ -32,7 +32,7 @@ dependencies = [
   "gunicorn<24; platform_system != 'Windows'",
   "alembic<2,!=1.10.0",
   "authlib<2",
-  "flask-caching<3"
+  "flask-caching<3",
   "pyjwt[crypto]>=2.9.0,<3.0.0"
 ]
 
