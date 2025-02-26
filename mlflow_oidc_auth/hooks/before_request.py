@@ -85,6 +85,7 @@ def _is_unprotected_route(path: str) -> bool:
             "/callback",
             "/oidc/static",
             "/metrics",
+            config.LOGIN_REDIRECT_PREFIX + "/login"
         )
     )
 
