@@ -4,7 +4,7 @@ from flask import redirect, session, url_for, render_template
 import jwt 
 
 import mlflow_oidc_auth.utils as utils
-from mlflow_oidc_auth.auth import get_oauth_instance
+from mlflow_oidc_auth.auth import get_oauth_instance, validate_token
 from mlflow_oidc_auth.app import app
 from mlflow_oidc_auth.config import config
 from mlflow_oidc_auth.user import create_user, populate_groups, update_user
@@ -51,7 +51,7 @@ def callback():
     else:
         group_attr = config.OIDC_GROUPS_ATTRIBUTE
         user_info = token["userinfo"]
-        decoded_access_token = jwt.decode(token["access_token"], audience=config.OIDC_AUDIENCE, options={"verify_signature": False})
+        decoded_access_token = validate_token(token["access_token"])
         if group_attr in decoded_access_token:
             user_groups = decoded_access_token[group_attr]
         if group_attr in user_info:
@@ -69,4 +69,4 @@ def callback():
     update_user(email.lower(), user_groups)
     session["username"] = email.lower()
 
-    return redirect(url_for("oidc_ui"))
+    return redirect(config.LOGIN_REDIRECT_PREFIX + "/oidc_ui")
