@@ -3,11 +3,11 @@ import secrets
 from flask import redirect, session, url_for, render_template
 
 import mlflow_oidc_auth.utils as utils
-from mlflow_oidc_auth.auth import get_oauth_instance
+from mlflow_oidc_auth.auth import get_oauth_instance, validate_token
 from mlflow_oidc_auth.app import app
 from mlflow_oidc_auth.config import config
 from mlflow_oidc_auth.user import create_user, populate_groups, update_user
-
+from mlflow_oidc_auth.routes import UI_ROOT
 
 def login():
     state = secrets.token_urlsafe(16)
@@ -62,4 +62,4 @@ def callback():
     update_user(email.lower(), user_groups)
     session["username"] = email.lower()
 
-    return redirect(url_for("oidc_ui"))
+    return redirect(config.LOGIN_REDIRECT_PREFIX + UI_ROOT)

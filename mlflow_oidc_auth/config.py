@@ -30,6 +30,7 @@ class AppConfig:
         self.OIDC_CLIENT_ID = os.environ.get("OIDC_CLIENT_ID", None)
         self.OIDC_CLIENT_SECRET = os.environ.get("OIDC_CLIENT_SECRET", None)
         self.AUTOMATIC_LOGIN_REDIRECT = get_bool_env_variable("AUTOMATIC_LOGIN_REDIRECT", False)
+        self.LOGIN_REDIRECT_PREFIX = os.environ.get("LOGIN_REDIRECT_PREFIX", "") 
 
         # session
         self.SESSION_TYPE = os.environ.get("SESSION_TYPE", "cachelib")
