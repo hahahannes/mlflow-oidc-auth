@@ -37,12 +37,12 @@ export const getSidebarData = (
       isInternalLink: true,
       icon: faMicroscope,
     },
-    {
+    /*{
       label: "Prompts",
       href: "/prompts",
       isInternalLink: true,
       icon: faSquareShareNodes,
-    },
+    },*/
     {
       label: "Models",
       href: "/models",
